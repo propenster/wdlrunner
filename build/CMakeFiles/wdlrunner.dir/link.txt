@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/wdlrunner.dir/src/boolean_network.cpp.o CMakeFiles/wdlrunner.dir/src/lexer.cpp.o CMakeFiles/wdlrunner.dir/src/main.cpp.o CMakeFiles/wdlrunner.dir/src/parser.cpp.o -o wdlrunner 

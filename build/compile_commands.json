@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/propenster/src/wdlrunner/build",
+  "command": "/usr/bin/g++  -I/home/propenster/src/wdlrunner/include -g -std=c++17 -o CMakeFiles/wdlrunner.dir/src/boolean_network.cpp.o -c /home/propenster/src/wdlrunner/src/boolean_network.cpp",
+  "file": "/home/propenster/src/wdlrunner/src/boolean_network.cpp"
+},
+{
+  "directory": "/home/propenster/src/wdlrunner/build",
+  "command": "/usr/bin/g++  -I/home/propenster/src/wdlrunner/include -g -std=c++17 -o CMakeFiles/wdlrunner.dir/src/lexer.cpp.o -c /home/propenster/src/wdlrunner/src/lexer.cpp",
+  "file": "/home/propenster/src/wdlrunner/src/lexer.cpp"
+},
+{
+  "directory": "/home/propenster/src/wdlrunner/build",
+  "command": "/usr/bin/g++  -I/home/propenster/src/wdlrunner/include -g -std=c++17 -o CMakeFiles/wdlrunner.dir/src/main.cpp.o -c /home/propenster/src/wdlrunner/src/main.cpp",
+  "file": "/home/propenster/src/wdlrunner/src/main.cpp"
+},
+{
+  "directory": "/home/propenster/src/wdlrunner/build",
+  "command": "/usr/bin/g++  -I/home/propenster/src/wdlrunner/include -g -std=c++17 -o CMakeFiles/wdlrunner.dir/src/parser.cpp.o -c /home/propenster/src/wdlrunner/src/parser.cpp",
+  "file": "/home/propenster/src/wdlrunner/src/parser.cpp"
+}
+]
