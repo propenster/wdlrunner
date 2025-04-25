@@ -21,10 +21,10 @@ namespace util
     }
     inline bool is_non_primitive_member_type(std::string_view type) noexcept
     {
-        return type == "input" ||
-               type == "output" ||
-               type == "runtime" ||
-               type == "meta";
+        return to_lowercase(type) == "input" ||
+               to_lowercase(type) == "output" ||
+               to_lowercase(type) == "runtime" ||
+               to_lowercase(type) == "meta";
     }
     inline bool array_contains_char(char chr) noexcept
     {

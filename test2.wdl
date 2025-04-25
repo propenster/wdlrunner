@@ -48,6 +48,10 @@ task OncotateSegments {
       Boolean use_ssd = false
       Int? cpu
       Int? preemptible_attempts
+      Array[String]? funcotator_annotation_defaults
+      Array[String]? funcotator_annotation_overrides
+      Array[String]? funcotator_excluded_fields
+      Array[Int]+? step_sizes = [1, 2, 3, 4, 5]
     }
 
     Int machine_mem_mb = select_first([mem_gb, 3]) * 1000

@@ -21,7 +21,7 @@ namespace soto
         for (;;)
         {
             token n_tok = next_token();
-            // std::cout << "next token emitted in parser is " << n_tok << std::endl;
+            std::cout << "next token emitted in parser is " << n_tok << std::endl;
             curr_tok = std::make_shared<token>(std::move(n_tok));
             if (curr_tok->kind != T_ERROR)
                 break;
@@ -112,6 +112,40 @@ namespace soto
                 prow.version = std::move(version);
                 if (expect_token(T_ENDL))
                     expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after version declaration.");
+            }
+            // any Imports?
+            if (expect_token_and_read(T_IMPORT))
+            {
+                ast_node_ptr import_node = new_node(N_IMPORT_DECL);
+                import_decl import_decl{};
+
+                do
+                {
+                    if (expect_token_and_read(T_SLITERAL))
+                    {
+                        import_decl.path = new_node(N_LITERAL);
+                        import_decl.path->tok = prev_tok;
+
+                        if (expect_token_and_read(T_AS))
+                        {
+                            expect_token_or_emit_error(T_IDENT, "Expect identifier after 'as' in import statement.");
+                            import_decl.alias = new_node(N_IDENT);
+                            import_decl.alias->tok = prev_tok;
+                        }
+                    }
+                    else
+                    {
+                        emit_error("Expect a string literal for import path.", *curr_tok);
+                        break;
+                    }
+
+                    import_node->node = std::move(import_decl);
+                    prow.imports.push_back(std::move(import_node));
+
+                    if (expect_token(T_ENDL))
+                        expect_token_and_read(T_ENDL);
+
+                } while (expect_token_and_read(T_IMPORT));
             }
 
             ast_node_ptr decl = parse_decl();
@@ -216,7 +250,7 @@ namespace soto
 
     static bool is_unusual_type(const token_kind &kind)
     {
-        return kind == T_COMMAND || kind == T_RUNTIME || kind == T_META || T_CALL;
+        return kind == T_COMMAND || kind == T_RUNTIME || kind == T_META || kind == T_CALL;
     }
     // parse a class/task/struct declaration...
     //  class have name...
@@ -362,11 +396,12 @@ namespace soto
                 continue;
             }
 
-            if (expect_token(T_COMMAND))
+            if (expect_token_and_read(T_COMMAND))
             {
-                expect_token_or_emit_error(T_COMMAND, "Expected command keyword before command");
                 // this is a command
                 command_decl command{};
+                // if (expect_token(T_ENDL))
+                //     expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after command declaration.");
                 ast_node_ptr cmd_body = new_node(N_LITERAL);
                 cmd_body->tok = prev_tok;
                 cmd_body->tok->kind = T_SLITERAL; // this is a string literal
@@ -414,12 +449,12 @@ namespace soto
 
             // if it's a known/inbuilt in summary a non-primitive type like input, output, runtime, meta, etc...
             std::string lexeme = type->tok->lexeme;
-            if (util::is_non_primitive_member_type(type->tok->lexeme) || is_unusual_type(type->tok->kind))
+            if (util::is_non_primitive_member_type(lexeme) || is_unusual_type(type->tok->kind))
             {
                 std::stringstream ss;
                 // if (expect_token(T_ENDL))
                 //     expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after block declaration.");
-                ss << "Expect '{' to begin" << type->tok->lexeme << " body.";
+                ss << "Expect '{' to begin " << type->tok->lexeme << " body.";
                 if (type->tok->kind != T_COMMAND) // only command doesn't need a '{' to start...
                     expect_token_or_emit_error(T_LCURLY, ss.str());
                 const std::string &type_name = util::to_lowercase(type->tok->lexeme);
@@ -441,7 +476,7 @@ namespace soto
                     output_node->node = std::move(output);
                     decl.members.push_back(std::move(output_node));
                 }
-                else if ("runtime")
+                else if (type_name == "runtime")
                 {
                     if (expect_token(T_ENDL))
                         expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after block declaration.");
@@ -623,11 +658,32 @@ namespace soto
         var_node.type = new_node(N_TYPE);
         // read_token_or_emit_error(); // consume type
         var_node.type->tok = prev_tok;
+        auto lexeme = var_node.type->tok->lexeme;
+        if (util::to_lowercase(lexeme) == "array")
+        {
+            std::string array_type_string = "";
+            // this is an array variable declaration...
+            expect_token_or_emit_error(T_LSQUARE, "Expect '[' to begin array declaration.");
+            array_type_string = lexeme + prev_tok->lexeme;
+            expect_token_and_read(T_TYPE); // consume the type
+            array_type_string += prev_tok->lexeme;
+            expect_token_or_emit_error(T_RSQUARE, "Expect ']' to end array declaration.");
+            array_type_string += prev_tok->lexeme;
+            if (expect_token(T_PLUS))
+            {
+                // this is a NON-empty array declaration...
+                expect_token_and_read(T_PLUS);
+                array_type_string += prev_tok->lexeme;
+            }
+            // do we want to distinguish between different TYPEs, to me TYPE is TYPE or NULLABLETYPE is NULLABLETYPE ..we can figure out the kind of TYPE in it's lexeme and by static analysis...
+            var_node.type->tok->lexeme = array_type_string;
+        }
 
         if (expect_token(T_QUESTION)) // if its File? or Int? or String? whatever....it's a nullable table and we'll get a '?' before the type Identifier
         {
             var_node.type->type = N_TYPE_NULLABLE;
             read_token_or_emit_error(); // consume the '?'
+            var_node.type->tok->lexeme += "?";
         }
         expect_token_or_emit_error(T_IDENT, "Expect variable name.");
         var_node.identifier = new_node(N_IDENT);
@@ -911,22 +967,24 @@ namespace soto
             node->tok = prev_tok;
             return node;
         }
-        // if (expect_token_and_read(T_IDENT) && peek_token(T_DOT))
-        // {
-        //     // this is a member access...
-        //     ast_node_ptr node = new_node(N_MEMBER_ACCESS);
-        //     node->tok = prev_tok;
-        //     member_access access{};
-        //     access.object = std::move(node);
-        //     expect_token_or_emit_error(T_DOT, "Expect '.' after identifier.");
-        //     if (expect_token_and_read(T_IDENT))
-        //     {
-        //         access.member = new_node(N_IDENT);
-        //         access.member->tok = prev_tok;
-        //         node->node = std::move(access);
-        //         return node;
-        //     }
-        // }
+        if (expect_token(T_IDENT) && peek_token(T_DOT))
+        {
+            ast_node_ptr node = new_node(N_MEMBER_ACCESS);
+            member_access access{};
+
+            access.object = new_node(N_IDENT);
+            expect_token_or_emit_error(T_IDENT, "Expect object identifier.");
+            access.object->tok = prev_tok;
+
+            expect_token_or_emit_error(T_DOT, "Expect '.' after object identifier.");
+
+            // expect_token_or_emit_error(T_IDENT, "Expect member name after '.' operator.");
+            auto member = parse_expr(); // because some times, it may not be just simple .IDENT for member access, sometimes, it may be .FUNC_CALL.. like OncoAnotate.get_function(param1, param2)
+            access.member = std::move(member);
+            access.member->tok = prev_tok;
+            node->node = std::move(access);
+            return node;
+        }
         if (expect_token_and_read(T_IDENT))
         {
             if (!expect_token(T_LPAREN)) // just identifyer
@@ -992,6 +1050,7 @@ namespace soto
         // }
 
         emit_error("Expect expression.", *curr_tok);
+        curr_tok->kind = T_EOF;
         return nullptr;
     }
     ast_node_ptr parser::parse_factor_expr()
@@ -1027,6 +1086,10 @@ namespace soto
                 {
                     std::cout << indentation << "Program Node:\n";
                     print_ast_node(value.version, indent + 2);
+                    for (const auto &import : value.imports)
+                    {
+                        print_ast_node(import, indent + 2);
+                    }
                     for (const auto &decl : value.declarations)
                     {
                         print_ast_node(decl, indent + 2);
@@ -1068,6 +1131,12 @@ namespace soto
                         print_ast_node(member, indent + 2);
                     }
                 }
+                else if constexpr (std::is_same_v<T, member_access>)
+                {
+                    std::cout << indentation << "Member Access:\n";
+                    print_ast_node(value.object, indent + 2);
+                    print_ast_node(value.member, indent + 2);
+                }
                 else if constexpr (std::is_same_v<T, output_decl>)
                 {
                     std::cout << indentation << "Output Declaration:\n";
@@ -1081,6 +1150,12 @@ namespace soto
                         print_ast_node(identifier, indent + 2);
                         print_ast_node(value, indent + 2);
                     }
+                }
+                else if constexpr (std::is_same_v<T, import_decl>)
+                {
+                    std::cout << indentation << "Import Declaration:\n";
+                    print_ast_node(value.path, indent + 2);
+                    print_ast_node(value.alias, indent + 2);
                 }
                 else if constexpr (std::is_same_v<T, meta_decl>)
                 {

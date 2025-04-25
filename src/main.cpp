@@ -40,14 +40,6 @@ int main(int argc, char *argv[])
 
     soto::lexer lexer{source_code};
     soto::parser parser{std::make_unique<soto::lexer>(lexer)};
-
-    // while (true)
-    // {
-    //     soto::token tok = lexer.lex();
-    //     if (tok.kind == soto::T_EOF)
-    //         break;
-    //     std::cout << "Token: " << tok << std::endl;
-    // }
     const soto::ast_node_ptr prog = parser.parse_program();
     std::cout << "Parsed program: " << std::endl;
     parser.print_ast_node(prog, 0);

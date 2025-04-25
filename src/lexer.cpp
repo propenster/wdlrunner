@@ -371,20 +371,19 @@ namespace soto
         std::string ident = source.substr(start_pos, position + 1 - start_pos);
         if (util::to_lowercase(ident) == "command")
         {
-            // then pass command... T_COMMAND...
-            token_kind tk{};
-            token tok = lex(); // this should be <<< i.e command should be immediately followed by a T_LSHIFT_ASSIGN i.e <<<
+            token tok = lex(); // This should be T_LSHIFT_ASSIGN (<<<)
             if (tok.kind != T_LSHIFT_ASSIGN)
             {
                 return new_token(T_ERROR, ident, start_pos);
             }
-            int cmd_start = position + 1;
-            while (c_char != '>' && n_char != '>')
+            size_t cmd_start = position + 1;
+            size_t end_pos = source.find(">>>", cmd_start);
+            if (end_pos == std::string::npos)
             {
-                next_token();
+                return new_token(T_ERROR, "Unterminated command block", start_pos);
             }
-            std::string cmd_body = source.substr(cmd_start, position - cmd_start);
-            auto _ = lex(); // jump over that closing <<< too...
+            std::string cmd_body = source.substr(cmd_start, end_pos - cmd_start);
+            position = end_pos + 3; // we move past the closing >>> i.e T_RSHIFT_ASSIGN
             return new_token(T_COMMAND, cmd_body, start_pos);
         }
         return new_token(T_IDENT, ident, start_pos);
@@ -499,6 +498,14 @@ namespace soto
         {
             tok.kind = T_CALL;
         }
+        else if (l == "import")
+        {
+            tok.kind = T_IMPORT;
+        }
+        else if (l == "as")
+        {
+            tok.kind = T_AS;
+        }
         else if (l == "or")
         {
             tok.kind = T_LOGICAL_OR;
@@ -572,7 +579,7 @@ namespace soto
     }
     bool lexer::is_reserved_word(const std::string &word)
     {
-        const std::array<std::string, 30> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call"};
+        const std::array<std::string, 32> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call", "import", "as"};
         for (const auto &i : reserved_words)
         {
             if (i == util::to_lowercase(word))

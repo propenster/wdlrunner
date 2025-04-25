@@ -79,6 +79,8 @@ namespace soto
         T_COMMENT,       // until when I can fix/ skipping comments, let's have this T_COMMENT here... for # or //
 
         T_CALL,
+        T_IMPORT,
+        T_AS,
 
         T_EOF,
         T_ERROR,
@@ -186,6 +188,12 @@ namespace soto
             return "T_RUNTIME";
         case T_COMMAND:
             return "T_COMMAND";
+
+        case T_CALL:
+            return "T_CALL";
+
+        case T_IMPORT:
+            return "T_IMPORT";
 
         case T_EOF:
             return "T_EOF";

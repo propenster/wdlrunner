@@ -50,6 +50,8 @@ namespace soto
 
         N_WTCALL,        // Node Workflow Task->Call...
         N_MEMBER_ACCESS, // Node for member access (e.g., obj.member)
+        // N_OBJECT,     // Node for object (e.g., obj)
+        N_IMPORT_DECL,
     };
 
     inline const char *ast_node_type_to_string(ast_node_type type)
@@ -121,6 +123,8 @@ namespace soto
             return "N_WTCALL";
         case N_MEMBER_ACCESS:
             return "N_MEMBER_ACCESS";
+        case N_IMPORT_DECL:
+            return "N_IMPORT_DECL";
 
         default:
             return "UNKNOWN AST_NODE_TYPE";
@@ -135,6 +139,7 @@ namespace soto
     struct program
     {
         ast_node_ptr version;
+        std::vector<ast_node_ptr> imports;
         std::vector<ast_node_ptr> declarations;
     };
 
@@ -184,6 +189,11 @@ namespace soto
         ast_node_ptr member;
     };
 
+    struct import_decl
+    {
+        ast_node_ptr path;
+        ast_node_ptr alias;
+    };
     struct func_decl
     {
         ast_node_ptr type;
@@ -287,9 +297,11 @@ namespace soto
                      assign_expr,
                      func_call,
                      array_expr,
-                     command_decl, 
+                     command_decl,
                      call_decl,
-                     member_access
+                     member_access,
+                     import_decl
+
                      >
             node;
     };
@@ -306,6 +318,11 @@ namespace soto
         // constructor
         parser(std::unique_ptr<lexer>);
 
+        ast_node_ptr parse_program();
+        void print_ast_node(const ast_node_ptr &, int indent);
+
+        // helper methods...
+    private:
         void read_token_or_emit_error();
         token next_token();
         bool peek_token(const token_kind &);
@@ -316,7 +333,6 @@ namespace soto
 
         ast_node_ptr new_node(const ast_node_type &);
 
-        ast_node_ptr parse_program();
         ast_node_ptr parse_decl();
         ast_node_ptr parse_func_decl();
         ast_node_ptr parse_class_decl();
@@ -343,8 +359,6 @@ namespace soto
         ast_node_ptr parse_factor_expr();
 
         ast_node_ptr parse_primary_expr();
-
-        void print_ast_node(const ast_node_ptr &, int indent);
     };
 
 }
