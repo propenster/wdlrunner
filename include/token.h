@@ -78,6 +78,8 @@ namespace soto
         T_RSHIFT_ASSIGN, //>>> this to close the T_LSHIFT_ASSIGN
         T_COMMENT,       // until when I can fix/ skipping comments, let's have this T_COMMENT here... for # or //
 
+        T_CALL,
+
         T_EOF,
         T_ERROR,
 

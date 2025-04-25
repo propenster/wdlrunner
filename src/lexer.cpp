@@ -495,6 +495,10 @@ namespace soto
         {
             tok.kind = T_LOGICAL_AND;
         }
+        else if (l == "call")
+        {
+            tok.kind = T_CALL;
+        }
         else if (l == "or")
         {
             tok.kind = T_LOGICAL_OR;
@@ -568,7 +572,7 @@ namespace soto
     }
     bool lexer::is_reserved_word(const std::string &word)
     {
-        const std::array<std::string, 28> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean"};
+        const std::array<std::string, 30> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call"};
         for (const auto &i : reserved_words)
         {
             if (i == util::to_lowercase(word))
@@ -578,7 +582,7 @@ namespace soto
     }
     bool lexer::is_type_token(const std::string &word)
     {
-        const std::array<std::string, 13> reserved_words = {
+        const std::array<std::string, 14> reserved_words = {
             "int",
             "float",
             "string",
@@ -592,6 +596,7 @@ namespace soto
             "input",
             "output",
             "boolean",
+            "workflow",
         };
         for (const auto &i : reserved_words)
         {

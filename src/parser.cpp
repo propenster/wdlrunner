@@ -81,6 +81,7 @@ namespace soto
 
         os << ": " << error_msg << std::endl;
         std::cerr << os.str();
+        return;
     }
     ast_node_ptr parser::parse_program()
     {
@@ -215,7 +216,7 @@ namespace soto
 
     static bool is_unusual_type(const token_kind &kind)
     {
-        return kind == T_COMMAND || kind == T_RUNTIME || kind == T_META;
+        return kind == T_COMMAND || kind == T_RUNTIME || kind == T_META || T_CALL;
     }
     // parse a class/task/struct declaration...
     //  class have name...
@@ -246,6 +247,65 @@ namespace soto
             {
                 emit_error("Expected type keyword at start of class member.", *curr_tok);
                 break;
+            }
+
+            // if it's a CALL construct, then it's a class (most-likely a WORKFLOW class) member...
+            if (expect_token_and_read(T_CALL))
+            {
+                ast_node_ptr call = new_node(N_WTCALL);
+
+                expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct.");
+                ast_node_ptr task_name_to_call = new_node(N_IDENT);
+                task_name_to_call->tok = prev_tok;
+                call_decl input_decl{};
+                if (!expect_token(T_LCURLY))
+                {
+                    // then this is an input less call construct...
+                    call->node = std::move(input_decl); // just push the no-input call...
+                    decl.members.push_back(std::move(call));
+                    continue;
+                }
+                expect_token_or_emit_error(T_LCURLY, "Expect '{' to begin call construct input body.");
+                if (expect_token(T_ENDL))
+                    expect_token_and_read(T_ENDL);
+                if (!expect_token(T_TYPE))
+                {
+                    // input keyword is a type... no need to check for T_IDENT
+                    // this is an INPUT-less call construct...
+                    // so this unserious user is trying to be funny...
+                    // a left CURLY without an intention of having inputs...
+                    call->node = std::move(input_decl); // just push the no-input call...
+                    decl.members.push_back(std::move(call));
+                    continue;
+                }
+                expect_token_or_emit_error(T_TYPE, "Expect identifier for call construct."); // input: some may not have inputs...handle that...input is a tTYPE
+                expect_token_or_emit_error(T_COLON, "Expect ':' after call construct input identifier.");
+
+                input_decl.identifier = std::move(task_name_to_call);
+
+                do
+                {
+                    // if (expect_token_and_read(T_ENDL))
+                    //     continue;
+                    if (expect_token(T_ENDL))
+                        expect_token_and_read(T_ENDL);
+                    expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct input.");
+                    ast_node_ptr input_ident = new_node(N_IDENT);
+                    input_ident->tok = prev_tok;
+
+                    expect_token_or_emit_error(T_ASSIGN, "Expect ':' after call construct input identifier.");
+
+                    // expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct input.");
+                    ast_node_ptr input_value = parse_expr();
+                    // expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after call construct input value.");
+                    input_decl.arguments.emplace_back(std::move(input_ident), std::move(input_value));
+                } while (expect_token_and_read(T_COMMA));
+                if (expect_token(T_ENDL))
+                    expect_token_and_read(T_ENDL);
+                expect_token_or_emit_error(T_RCURLY, "Expect '}' to close call construct body.");
+                call->node = std::move(input_decl);
+                decl.members.push_back(std::move(call));
+                continue;
             }
 
             // if it's parameter_meta T_META,
@@ -851,6 +911,22 @@ namespace soto
             node->tok = prev_tok;
             return node;
         }
+        // if (expect_token_and_read(T_IDENT) && peek_token(T_DOT))
+        // {
+        //     // this is a member access...
+        //     ast_node_ptr node = new_node(N_MEMBER_ACCESS);
+        //     node->tok = prev_tok;
+        //     member_access access{};
+        //     access.object = std::move(node);
+        //     expect_token_or_emit_error(T_DOT, "Expect '.' after identifier.");
+        //     if (expect_token_and_read(T_IDENT))
+        //     {
+        //         access.member = new_node(N_IDENT);
+        //         access.member->tok = prev_tok;
+        //         node->node = std::move(access);
+        //         return node;
+        //     }
+        // }
         if (expect_token_and_read(T_IDENT))
         {
             if (!expect_token(T_LPAREN)) // just identifyer

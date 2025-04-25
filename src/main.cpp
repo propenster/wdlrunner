@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     // std::string source_code = read_file(argv[1]);
     // std::cout << "Source code read from file:\n"
     //           << source_code << std::endl;
-    std::string source_code = read_file("../test.wdl");
+    std::string source_code = read_file("../test2.wdl");
     std::cout << "Source code read from file:\n"
               << source_code << std::endl;
 

@@ -47,6 +47,9 @@ namespace soto
         N_ASSIGNMENT,
         N_LITERAL,
         N_STRUCT,
+
+        N_WTCALL,        // Node Workflow Task->Call...
+        N_MEMBER_ACCESS, // Node for member access (e.g., obj.member)
     };
 
     inline const char *ast_node_type_to_string(ast_node_type type)
@@ -114,6 +117,11 @@ namespace soto
         case N_META_MEMBER_DECL:
             return "N_META_MEMBER_DECL";
 
+        case N_WTCALL:
+            return "N_WTCALL";
+        case N_MEMBER_ACCESS:
+            return "N_MEMBER_ACCESS";
+
         default:
             return "UNKNOWN AST_NODE_TYPE";
         }
@@ -163,6 +171,17 @@ namespace soto
     {
         ast_node_ptr identifier;
         std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> members;
+    };
+
+    struct call_decl
+    {
+        ast_node_ptr identifier;
+        std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> arguments;
+    };
+    struct member_access
+    {
+        ast_node_ptr object;
+        ast_node_ptr member;
     };
 
     struct func_decl
@@ -268,7 +287,10 @@ namespace soto
                      assign_expr,
                      func_call,
                      array_expr,
-                     command_decl>
+                     command_decl, 
+                     call_decl,
+                     member_access
+                     >
             node;
     };
 
