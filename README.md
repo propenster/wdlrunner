@@ -193,14 +193,14 @@ Here's a list of currently planned or partially implemented features:
 
 - [ ] **Workflow block support:** Execution of `workflow` blocks and task chaining
 - [ ] **Struct Definition:** And Custom Types...
-- [ ] **Imports**
-- [ ] **Call Statement/Expression**
+- [x] **Imports**
+- [x] **Call Statement/Expression**
 - [ ] **Map[String,String]**
 - [ ] **Scatter/Gather** - It is loops we have loops already...wth
 - [ ] **Optional Parameters** call_func(default='default_value_here', optional_param)
 - [ ] **Scatter and if blocks:** Conditional and parallel executions
 - [ ] **Advanced error handling:** Type checking and better diagnostics
-- [ ] **Imports and namespaces:** Support for `import` statements and reusable modules
+- [x] **Imports and namespaces:** Support for `import` statements and reusable modules
 - [ ] **Library expansion:** More functions like `length`, `size`, `sub`, etc.
 - [x] **CLI tool:** A runner to compile and execute WDL scripts directly
 - [ ] **Testing:** Unit and integration tests for all components
