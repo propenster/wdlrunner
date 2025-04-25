@@ -1,3 +1,0 @@
-/home/propenster/src/wdlrunner/build/CMakeFiles/wdlrunner.dir
-/home/propenster/src/wdlrunner/build/CMakeFiles/edit_cache.dir
-/home/propenster/src/wdlrunner/build/CMakeFiles/rebuild_cache.dir
