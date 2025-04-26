@@ -48,8 +48,10 @@ namespace soto
         N_LITERAL,
         N_STRUCT,
 
-        N_WTCALL,        // Node Workflow Task->Call...
-        N_MEMBER_ACCESS, // Node for member access (e.g., obj.member)
+        N_WTCALL,               // Node Workflow Task->Call...
+        N_MEMBER_ACCESS,        // Node for member access (e.g., obj.member)
+        N_MEMBER_ACCESS_OBJ,    // Node for member access object (e.g., obj)
+        N_MEMBER_ACCESS_MEMBER, // Node for member access member (e.g., obj.member)
         // N_OBJECT,     // Node for object (e.g., obj)
         N_IMPORT_DECL,
     };
@@ -119,6 +121,11 @@ namespace soto
         case N_META_MEMBER_DECL:
             return "N_META_MEMBER_DECL";
 
+        case N_MEMBER_ACCESS_OBJ:
+            return "N_MEMBER_ACCESS_OBJ";
+        case N_MEMBER_ACCESS_MEMBER:
+            return "N_MEMBER_ACCESS_MEMBER";
+
         case N_WTCALL:
             return "N_WTCALL";
         case N_MEMBER_ACCESS:
@@ -178,15 +185,26 @@ namespace soto
         std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> members;
     };
 
-    struct call_decl
-    {
-        ast_node_ptr identifier;
-        std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> arguments;
-    };
+    // struct call_decl
+    // {
+    //     ast_node_ptr identifier;
+    //     ast_node_ptr member_accessed; // this will be a member access node... i.e the struct just below this one...so Identifier may now be unnecessary...
+    //     ast_node_ptr alias;
+    //     std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> arguments;
+    // };
+
     struct member_access
     {
         ast_node_ptr object;
         ast_node_ptr member;
+    };
+    struct call_decl
+    {
+        // ast_node_ptr object; // N_MEMBER_ACCESS_OBJ
+        // ast_node_ptr member; // N_MEMBER_ACCESS_MEMBER
+        ast_node_ptr member_accessed; // this will be a member access node... i.e the struct just below this one...so Identifier may now be unnecessary...
+        ast_node_ptr alias;
+        std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> arguments;
     };
 
     struct import_decl

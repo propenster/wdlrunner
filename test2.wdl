@@ -1,5 +1,10 @@
 version 1.0
 
+
+import "../cnv_common_tasks.wdl" as CNVTasks
+import "cnv_somatic_oncotator_workflow.wdl" as CNVOncotator
+import "cnv_somatic_funcotate_seg_workflow.wdl" as CNVFuncotateSegments
+
 workflow CNVOncotatorWorkflow {
 
     input {
@@ -19,6 +24,37 @@ workflow CNVOncotatorWorkflow {
     }
 
     call OncotateSegments {
+        input:
+            called_file = called_file,
+            additional_args = additional_args,
+            oncotator_docker = oncotator_docker,
+            mem_gb = mem_gb_for_oncotator,
+            boot_disk_space_gb = boot_disk_space_gb_for_oncotator,
+            preemptible_attempts = preemptible_attempts
+    }
+
+    output {
+        File oncotated_called_file = OncotateSegments.oncotated_called_file
+        File oncotated_called_gene_list_file = OncotateSegments.oncotated_called_gene_list_file
+    }
+}
+
+workflow MyTestWorkflow {
+
+    input {
+      File called_file
+
+      ##################################
+      #### optional basic arguments ####
+      ##################################
+      String? additional_args
+      String? oncotator_docker
+      Int? mem_gb_for_oncotator
+      Int? boot_disk_space_gb_for_oncotator
+      Int? preemptible_attempts
+    }
+
+    call CNVTasks.PerformCNV as CNVStemCells {
         input:
             called_file = called_file,
             additional_args = additional_args,

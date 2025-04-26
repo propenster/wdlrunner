@@ -194,6 +194,8 @@ namespace soto
 
         case T_IMPORT:
             return "T_IMPORT";
+        case T_AS:
+            return "T_AS";
 
         case T_EOF:
             return "T_EOF";

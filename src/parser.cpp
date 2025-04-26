@@ -116,11 +116,13 @@ namespace soto
             // any Imports?
             if (expect_token_and_read(T_IMPORT))
             {
-                ast_node_ptr import_node = new_node(N_IMPORT_DECL);
-                import_decl import_decl{};
+                // ast_node_ptr import_node = new_node(N_IMPORT_DECL);
+                // import_decl import_decl{};
 
                 do
                 {
+                    ast_node_ptr import_node = new_node(N_IMPORT_DECL);
+                    import_decl import_decl{};
                     if (expect_token_and_read(T_SLITERAL))
                     {
                         import_decl.path = new_node(N_LITERAL);
@@ -292,6 +294,36 @@ namespace soto
                 ast_node_ptr task_name_to_call = new_node(N_IDENT);
                 task_name_to_call->tok = prev_tok;
                 call_decl input_decl{};
+
+                ast_node_ptr mem_access = new_node(N_MEMBER_ACCESS);
+
+                member_access member_access{};
+
+                ast_node_ptr member_access_obj = new_node(N_MEMBER_ACCESS_OBJ);
+                member_access_obj->tok = prev_tok;
+                member_access.object = std::move(member_access_obj); // Use the task_name_to_call as the object
+
+                // if it's a CALL construct with a member access... and with or without an ALIAS...
+                if (expect_token_and_read(T_DOT))
+                {
+                    expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct member access.");
+                    ast_node_ptr member_access_member = new_node(N_MEMBER_ACCESS_MEMBER);
+                    member_access_member->tok = prev_tok;
+                    member_access.member = std::move(member_access_member); // Use the task_name_to_call as the object
+
+                    if (expect_token_and_read(T_AS))
+                    {
+                        expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct member alias.");
+                        ast_node_ptr alias = new_node(N_IDENT);
+                        alias->tok = prev_tok;
+
+                        input_decl.alias = std::move(alias);
+                    }
+
+                    mem_access->node = std::move(member_access);
+                    input_decl.member_accessed = std::move(mem_access); // Use the member_access as the member_accessed
+                }
+
                 if (!expect_token(T_LCURLY))
                 {
                     // then this is an input less call construct...
@@ -315,7 +347,7 @@ namespace soto
                 expect_token_or_emit_error(T_TYPE, "Expect identifier for call construct."); // input: some may not have inputs...handle that...input is a tTYPE
                 expect_token_or_emit_error(T_COLON, "Expect ':' after call construct input identifier.");
 
-                input_decl.identifier = std::move(task_name_to_call);
+                // input_decl.identifier = std::move(task_name_to_call);
 
                 do
                 {
@@ -1129,6 +1161,18 @@ namespace soto
                     for (const auto &member : value.members)
                     {
                         print_ast_node(member, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, call_decl>)
+                {
+                    std::cout << indentation << "Call Declaration:\n";
+                    print_ast_node(value.member_accessed, indent + 2);
+                    if (value.alias)
+                        print_ast_node(value.alias, indent + 2);
+                    for (const auto &[key, val] : value.arguments)
+                    {
+                        print_ast_node(key, indent + 2);
+                        print_ast_node(val, indent + 2);
                     }
                 }
                 else if constexpr (std::is_same_v<T, member_access>)
