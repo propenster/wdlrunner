@@ -83,6 +83,7 @@ namespace soto
         T_AS,
         T_IN,
         T_SCATTER,
+        T_DEFAULT,
 
         T_EOF,
         T_ERROR,

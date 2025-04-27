@@ -190,6 +190,7 @@ namespace soto
     struct func_call
     {
         ast_node_ptr identifier;
+        ast_node_ptr default_value; // default value for the function call if applicable...
         std::vector<ast_node_ptr> arguments;
     };
     struct array_expr

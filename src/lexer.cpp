@@ -521,6 +521,9 @@ namespace soto
         {
             tok.kind = T_BLITERAL;
         }
+        else if(l == "default"){
+            tok.kind = T_DEFAULT;
+        }
         else if (l == "xor")
         {
             tok.kind = T_XOR;
@@ -588,7 +591,7 @@ namespace soto
     }
     bool lexer::is_reserved_word(const std::string &word)
     {
-        const std::array<std::string, 36> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call", "import", "as", "map", "in", "scatter", "pair"};
+        const std::array<std::string, 37> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call", "import", "as", "map", "in", "scatter", "pair", "default"};
         for (const auto &i : reserved_words)
         {
             if (i == util::to_lowercase(word))

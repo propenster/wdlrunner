@@ -1193,6 +1193,16 @@ namespace soto
                         {
                             emit_error("Too many arguments in function call.", *curr_tok);
                         }
+                        // check for optional parameter......
+                        // and default=value for the parameter...
+                        // is there an optional parameter default ?
+                        if (expect_token_and_read(T_DEFAULT))
+                        {
+                            expect_token_or_emit_error(T_ASSIGN, "Expect '=' after default parameter.");
+                            auto default_value = parse_expr();
+                            call.default_value = std::move(default_value);
+                        }
+
                         call.arguments.push_back(std::move(parse_expr()));
                     } while (expect_token_and_read(T_COMMA));
                 }
@@ -1725,6 +1735,8 @@ namespace soto
                 {
                     std::cout << indentation << "Function Call:\n";
                     print_ast_node(value.identifier, indent + 2);
+                    if (value.default_value)
+                        print_ast_node(value.default_value, indent + 2);
                     for (const auto &arg : value.arguments)
                     {
                         print_ast_node(arg, indent + 2);
