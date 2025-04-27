@@ -580,6 +580,12 @@ namespace soto
                 //     decl.members.push_back(std::move(meta_node));
                 // }
             }
+            else if (util::is_reference_type(lexeme))
+            {
+                // array, map, etc...
+                auto my_var = parse_var_decl();
+                decl.members.push_back(std::move(my_var));
+            }
             else
             {
                 expect_token_or_emit_error(T_IDENT, "Expect member name after type.");
@@ -713,6 +719,34 @@ namespace soto
             var_node.type->tok->lexeme = array_type_string;
         }
 
+        if (util::to_lowercase(lexeme) == "map")
+        {
+            // Map[String, File] input_files = {
+            //     "sample1": "s1.bam",
+            //     "sample2": "s2.bam"
+            //   }
+            std::string array_type_string = "";
+            // this is an array variable declaration...
+            expect_token_or_emit_error(T_LSQUARE, "Expect '[' to begin array declaration.");
+            array_type_string = lexeme + prev_tok->lexeme;
+            expect_token_and_read(T_TYPE); // consume the type1 i.e type of KEY
+            array_type_string += prev_tok->lexeme;
+            expect_token_or_emit_error(T_COMMA, "Expect ',' to separate key and value types in map declaration.");
+            array_type_string += prev_tok->lexeme; // eat the comma too...
+            expect_token_and_read(T_TYPE);         // consume the type2 i.e type of VALUE
+            array_type_string += prev_tok->lexeme;
+            expect_token_or_emit_error(T_RSQUARE, "Expect ']' to end array declaration.");
+            array_type_string += prev_tok->lexeme;
+            if (expect_token(T_PLUS))
+            {
+                // this is a NON-empty array declaration...
+                expect_token_and_read(T_PLUS);
+                array_type_string += prev_tok->lexeme;
+            }
+            // do we want to distinguish between different TYPEs, to me TYPE is TYPE or NULLABLETYPE is NULLABLETYPE ..we can figure out the kind of TYPE in it's lexeme and by static analysis...
+            var_node.type->tok->lexeme = array_type_string;
+        }
+
         if (expect_token(T_QUESTION)) // if its File? or Int? or String? whatever....it's a nullable table and we'll get a '?' before the type Identifier
         {
             var_node.type->type = N_TYPE_NULLABLE;
@@ -745,7 +779,9 @@ namespace soto
         block block{};
         while (!expect_token(T_RCURLY) && !expect_token(T_EOF))
         {
-            expect_token_and_read(T_ENDL); // consume any endline T_ENDL before start of block statements...
+            if (expect_token_and_read(T_ENDL))
+                continue; // consume any endline T_ENDL before start of block statements...
+            // expect_token_and_read(T_ENDL); // consume any endline T_ENDL before start of block statements...
             auto stmt = parse_decl();
             block.statements.push_back(std::move(stmt));
         }
@@ -1076,6 +1112,31 @@ namespace soto
             expect_token_or_emit_error(T_RSQUARE, "Expect a closing ']' after array elements.");
             return array_node;
         }
+        if (expect_token_and_read(T_LCURLY)) // if we hit here, it's the start of initialization of a WDL1.0 HashMap a.k.a Map
+        {
+            ast_node_ptr map_node = new_node(N_MAP);
+            map_expr map{};
+            if (!expect_token(T_RCURLY))
+                do
+                {
+                    while (expect_token_and_read(T_ENDL))
+                        ; // consume any endline T_ENDL before start of map elements...
+                    if (map.elements.size() >= 255)
+                    {
+                        emit_error("Too many elements in map.", *curr_tok);
+                    }
+                    auto key = parse_expr();
+                    expect_token_or_emit_error(T_COLON, "Expect ':' after map key.");
+                    auto value = parse_expr();
+                    map.elements.emplace_back(std::move(key), std::move(value)); // key-value pair
+                    // TODO -> check if the key exists, check the type is consistent with the map type... etc.
+                } while (expect_token_and_read(T_COMMA));
+
+            map_node->node = std::move(map);
+            while (expect_token_and_read(T_ENDL));               
+            expect_token_or_emit_error(T_RCURLY, "Expect a closing '}' after map elements.");
+            return map_node;
+        }
 
         // if (expect_token_and_read(T_LPAREN))
         // {
@@ -1347,6 +1408,15 @@ namespace soto
                 {
                     std::cout << indentation << "Version Declaration:\n";
                     print_ast_node(value.version, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, map_expr>)
+                {
+                    std::cout << indentation << "Map Expression:\n";
+                    for (const auto &[key, val] : value.elements)
+                    {
+                        print_ast_node(key, indent + 2);
+                        print_ast_node(val, indent + 2);
+                    }
                 }
                 else if constexpr (std::is_same_v<T, func_decl>)
                 {

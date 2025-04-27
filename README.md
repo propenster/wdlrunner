@@ -189,7 +189,6 @@ N_PROGRAM
 
 ## Generated AST for test2.wdl source file
 ```plaintext
-
 Node Type: N_PROGRAM
 Program Node:
   Node Type: N_VERSION_DECL
@@ -569,6 +568,22 @@ Program Node:
         Program Node:
         Node Type: N_IDENT
         Program Node:
+    Node Type: N_VAR_DECL
+    Variable Declaration:
+      Node Type: N_TYPE
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_MAP
+      Map Expression:
+        Node Type: N_LITERAL
+        Program Node:
+        Node Type: N_LITERAL
+        Program Node:
+        Node Type: N_LITERAL
+        Program Node:
+        Node Type: N_LITERAL
+        Program Node:
     Node Type: N_COMMAND_DECL
     Command Declaration:
       Node Type: N_LITERAL
@@ -695,13 +710,16 @@ Here's a list of currently planned or partially implemented features:
 - [X] **Workflow block support:** Execution of `workflow` blocks and task chaining
 - [X] **Struct Definition:** And Custom Types...
 - [x] **Imports**
+- [X] **Type Definition** Primitive Types, Structs, Tasks, Workflows Definition
 - [x] **Call Statement/Expression**
-- [ ] **Map[String,String]**
+- [X] **Map[String,String]**
 - [ ] **Scatter/Gather** - It is loops we have loops already...wth
 - [ ] **Optional Parameters** call_func(default='default_value_here', optional_param)
+- [X] **If Statements** Including If-Expressions (ternary-like ifs) e.g if true then this else that
 - [ ] **Scatter and if blocks:** Conditional and parallel executions
 - [ ] **Advanced error handling:** Type checking and better diagnostics
 - [x] **Imports and namespaces:** Support for `import` statements and reusable modules
 - [ ] **Library expansion:** More functions like `length`, `size`, `sub`, etc.
 - [x] **CLI tool:** A runner to compile and execute WDL scripts directly
 - [ ] **Testing:** Unit and integration tests for all components
+- [ ] **Custom Type Variable Definition** e.g StructVarType nameOfVariable

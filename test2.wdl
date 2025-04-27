@@ -89,11 +89,16 @@ task OncotateSegments {
       Array[String]? funcotator_annotation_overrides
       Array[String]? funcotator_excluded_fields
       Array[Int]+? step_sizes = [1, 2, 3, 4, 5]
+      
     }
 
     Int machine_mem_mb = select_first([mem_gb, 3]) * 1000
 
     String basename_called_file = basename(called_file)
+    Map[String, File] input_files = {
+  "sample1": "s1.bam",
+  "sample2": "s2.bam"
+}
 
     command <<<
         set -e

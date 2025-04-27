@@ -57,6 +57,7 @@ namespace soto
         N_CALL_PARAM_VALUE,
         N_IMPORT_DECL,
         N_ALIAS_DECL,
+        N_MAP,
     };
 
     inline const char *ast_node_type_to_string(ast_node_type type)
@@ -141,6 +142,8 @@ namespace soto
             return "N_CALL_PARAM_VALUE";
         case N_ALIAS_DECL:
             return "N_ALIAS_DECL";
+        case N_MAP:
+            return "N_MAP"; //this is WDL's hashMap...
 
         default:
             return "UNKNOWN AST_NODE_TYPE";
@@ -183,6 +186,10 @@ namespace soto
     {
         ast_node_ptr identifier;
         std::vector<ast_node_ptr> elements;
+    };
+    struct map_expr{
+        //ast_node_ptr identifier;
+        std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> elements; // key-value pairs
     };
     struct runtime_decl
     {
@@ -327,7 +334,8 @@ namespace soto
                      command_decl,
                      call_decl,
                      member_access,
-                     import_decl
+                     import_decl,
+                     map_expr
 
                      >
             node;
