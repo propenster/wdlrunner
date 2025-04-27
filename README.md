@@ -189,6 +189,7 @@ N_PROGRAM
 
 ## Generated AST for test2.wdl source file
 ```plaintext
+
 Node Type: N_PROGRAM
 Program Node:
   Node Type: N_VERSION_DECL
@@ -435,6 +436,50 @@ Program Node:
             Program Node:
             Node Type: N_IDENT
             Program Node:
+  Node Type: N_STRUCT_DECL
+  Struct Declaration:
+    Node Type: N_IDENT
+    Program Node:
+    Node Type: N_VAR_DECL
+    Variable Declaration:
+      Node Type: N_TYPE
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+    Node Type: N_VAR_DECL
+    Variable Declaration:
+      Node Type: N_TYPE
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+  Node Type: N_VAR_DECL
+  Variable Declaration:
+    Node Type: N_TYPE
+    Program Node:
+    Node Type: N_IDENT
+    Program Node:
+    Node Type: N_MAP
+    Map Expression:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_LITERAL
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_LITERAL
+      Program Node:
+  Node Type: N_VAR_DECL
+  Variable Declaration:
+    Node Type: N_TYPE
+    Program Node:
+    Node Type: N_IDENT
+    Program Node:
+    Node Type: N_PAIR
+    Pair Expression:
+      Node Type: N_LITERAL
+      Program Node:
+      Node Type: N_LITERAL
+      Program Node:
   Node Type: N_CLASS_DECL
   Class Declaration:
     Node Type: N_IDENT
@@ -712,7 +757,8 @@ Here's a list of currently planned or partially implemented features:
 - [x] **Imports**
 - [X] **Type Definition** Primitive Types, Structs, Tasks, Workflows Definition
 - [x] **Call Statement/Expression**
-- [X] **Map[String,String]**
+- [X] **Map[String,String]** 
+- [X] **Pair[String,Int]** Add support for Pair[T, R] WDL type
 - [ ] **Scatter/Gather** - It is loops we have loops already...wth
 - [ ] **Optional Parameters** call_func(default='default_value_here', optional_param)
 - [X] **If Statements** Including If-Expressions (ternary-like ifs) e.g if true then this else that

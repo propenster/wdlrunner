@@ -33,7 +33,7 @@ namespace util
     }
     inline bool is_reference_type(std::string_view type) noexcept
     {
-        return to_lowercase(type) == "array" || to_lowercase(type) == "map";
+        return to_lowercase(type) == "array" || to_lowercase(type) == "map" || to_lowercase(type) == "pair";
     }
 
 }

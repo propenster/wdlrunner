@@ -79,6 +79,8 @@ struct Sample {
 
 Sample sample = { id: "sample1", bam_file: "sample1.bam" }
 
+Pair[String, Int] my_pair = ("apple", 5)
+
 
 task OncotateSegments {
 

@@ -793,6 +793,33 @@ namespace soto
             // do we want to distinguish between different TYPEs, to me TYPE is TYPE or NULLABLETYPE is NULLABLETYPE ..we can figure out the kind of TYPE in it's lexeme and by static analysis...
             var_node.type->tok->lexeme = array_type_string;
         }
+        if (util::to_lowercase(lexeme) == "pair")
+        {
+            // Pair[String, File] input_files = {
+            //     "sample1": "s1.bam",
+            //     "sample2": "s2.bam"
+            //   }
+            std::string array_type_string = "";
+            // this is an array variable declaration...
+            expect_token_or_emit_error(T_LSQUARE, "Expect '[' to begin array declaration.");
+            array_type_string = lexeme + prev_tok->lexeme;
+            expect_token_and_read(T_TYPE); // consume the typeLeft
+            array_type_string += prev_tok->lexeme;
+            expect_token_or_emit_error(T_COMMA, "Expect ',' to separate key and value types in map declaration.");
+            array_type_string += prev_tok->lexeme; // eat the comma too...
+            expect_token_and_read(T_TYPE);         // consume the typeRight...
+            array_type_string += prev_tok->lexeme;
+            expect_token_or_emit_error(T_RSQUARE, "Expect ']' to end array declaration.");
+            array_type_string += prev_tok->lexeme;
+            if (expect_token(T_PLUS))
+            {
+                // this is a NON-empty array declaration...
+                expect_token_and_read(T_PLUS);
+                array_type_string += prev_tok->lexeme;
+            }
+            // do we want to distinguish between different TYPEs, to me TYPE is TYPE or NULLABLETYPE is NULLABLETYPE ..we can figure out the kind of TYPE in it's lexeme and by static analysis...
+            var_node.type->tok->lexeme = array_type_string;
+        }
         if (expect_token(T_QUESTION)) // if its File? or Int? or String? whatever....it's a nullable table and we'll get a '?' before the type Identifier
         {
             var_node.type->type = N_TYPE_NULLABLE;
@@ -1220,6 +1247,28 @@ namespace soto
             expect_token_or_emit_error(T_RCURLY, "Expect a closing '}' after map elements.");
             return map_node;
         }
+        if (expect_token_and_read(T_LPAREN)) // this is initialization of a WDL1.0 Pair... i.e Pair[TypeLeft, TypeRight] = (ValueLeft, ValueRight)
+        {
+            ast_node_ptr pair_node = new_node(N_PAIR);
+            pair_expr pair{};
+            if (!expect_token(T_RPAREN))
+                do
+                {
+                    while (expect_token_and_read(T_ENDL))
+                        ; // consume any endline T_ENDL before start of map elements...
+                    auto first = parse_expr();
+                    expect_token_or_emit_error(T_COMMA, "Expect ',' after map key.");
+                    auto value = parse_expr();
+                    pair.first = std::move(first);
+                    pair.second = std::move(value);
+                } while (!expect_token(T_RPAREN));
+
+            pair_node->node = std::move(pair);
+            while (expect_token_and_read(T_ENDL))
+                ;
+            expect_token_or_emit_error(T_RPAREN, "Expect a closing ')' after map elements.");
+            return pair_node;
+        }
 
         // if (expect_token_and_read(T_LPAREN))
         // {
@@ -1500,6 +1549,21 @@ namespace soto
                         print_ast_node(key, indent + 2);
                         print_ast_node(val, indent + 2);
                     }
+                }
+                else if constexpr (std::is_same_v<T, struct_decl>)
+                {
+                    std::cout << indentation << "Struct Declaration:\n";
+                    print_ast_node(value.identifier, indent + 2);
+                    for (const auto &member : value.members)
+                    {
+                        print_ast_node(member, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, pair_expr>)
+                {
+                    std::cout << indentation << "Pair Expression:\n";
+                    print_ast_node(value.first, indent + 2);
+                    print_ast_node(value.second, indent + 2);
                 }
                 else if constexpr (std::is_same_v<T, func_decl>)
                 {

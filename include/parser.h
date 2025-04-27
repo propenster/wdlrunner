@@ -60,6 +60,7 @@ namespace soto
         N_MAP,
         N_SCATTER_STMT,
         N_STRUCT_DECL,
+        N_PAIR,
     };
 
     inline const char *ast_node_type_to_string(ast_node_type type)
@@ -151,6 +152,8 @@ namespace soto
             return "N_SCATTER_STMT";
         case N_STRUCT_DECL:
             return "N_STRUCT_DECL";
+        case N_PAIR:
+            return "N_PAIR"; // this is WDL's tuple type...
 
         default:
             return "UNKNOWN AST_NODE_TYPE";
@@ -198,6 +201,11 @@ namespace soto
     {
         // ast_node_ptr identifier;
         std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> elements; // key-value pairs
+    };
+    struct pair_expr
+    {
+        ast_node_ptr first;
+        ast_node_ptr second;
     };
     struct runtime_decl
     {
@@ -357,7 +365,8 @@ namespace soto
                      import_decl,
                      map_expr,
                      scatter_stmt,
-                     struct_decl
+                     struct_decl,
+                     pair_expr
 
                      >
             node;

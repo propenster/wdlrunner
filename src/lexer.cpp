@@ -588,7 +588,7 @@ namespace soto
     }
     bool lexer::is_reserved_word(const std::string &word)
     {
-        const std::array<std::string, 35> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call", "import", "as", "map", "in", "scatter",};
+        const std::array<std::string, 36> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call", "import", "as", "map", "in", "scatter", "pair"};
         for (const auto &i : reserved_words)
         {
             if (i == util::to_lowercase(word))
@@ -598,7 +598,7 @@ namespace soto
     }
     bool lexer::is_type_token(const std::string &word)
     {
-        const std::array<std::string, 16> reserved_words = {
+        const std::array<std::string, 17> reserved_words = {
             "int",
             "float",
             "string",
@@ -614,7 +614,8 @@ namespace soto
             "boolean",
             "workflow",
             "map", // this is WDL's hashMap...
-            "struct"
+            "struct",
+            "pair" //this is WDL's tuple type...
         };
         for (const auto &i : reserved_words)
         {
