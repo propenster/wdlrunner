@@ -768,4 +768,4 @@ Here's a list of currently planned or partially implemented features:
 - [ ] **Library expansion:** More functions like `length`, `size`, `sub`, etc.
 - [x] **CLI tool:** A runner to compile and execute WDL scripts directly
 - [ ] **Testing:** Unit and integration tests for all components
-- [ ] **Custom Type Variable Definition** e.g StructVarType nameOfVariable
+- [X] **Custom Type Variable Definition** e.g StructType nameOfVariable
