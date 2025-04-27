@@ -371,18 +371,21 @@ namespace soto
         std::string ident = source.substr(start_pos, position + 1 - start_pos);
         if (util::to_lowercase(ident) == "command")
         {
-            token tok = lex(); // This should be T_LSHIFT_ASSIGN (<<<)
-            if (tok.kind != T_LSHIFT_ASSIGN)
+            token tok = lex();                                       // This should be T_LSHIFT_ASSIGN (<<<)
+            if (tok.kind != T_LSHIFT_ASSIGN && tok.kind != T_LCURLY) // it should be either followed by <<< or {
             {
-                return new_token(T_ERROR, ident, start_pos);
+                return new_token(T_ERROR, "Expect <<< or { after command keyword", start_pos);
             }
             size_t cmd_start = position + 1;
-            size_t end_pos = source.find(">>>", cmd_start);
+            std::string_view stop_codon = (tok.kind == T_LSHIFT_ASSIGN) ? ">>>" : "}";
+            size_t end_pos = source.find(stop_codon, cmd_start);
+            // size_t end_pos = source.find(">>>", cmd_start);
             if (end_pos == std::string::npos)
             {
                 return new_token(T_ERROR, "Unterminated command block", start_pos);
             }
             std::string cmd_body = source.substr(cmd_start, end_pos - cmd_start);
+            std::cout << "command body >>> " << cmd_body << std::endl;
             position = end_pos + 3; // we move past the closing >>> i.e T_RSHIFT_ASSIGN
             return new_token(T_COMMAND, cmd_body, start_pos);
         }
@@ -547,6 +550,12 @@ namespace soto
         {
             tok.kind = T_RETURN;
         }
+        else if(l == "scatter"){
+            tok.kind = T_SCATTER;
+        }
+        else if (l == "in"){
+            tok.kind = T_IN;
+        }
         //"input", "output", "runtime", "meta", "command", "then", "array", "file"
         else if (l == "input")
         {
@@ -579,7 +588,7 @@ namespace soto
     }
     bool lexer::is_reserved_word(const std::string &word)
     {
-        const std::array<std::string, 33> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call", "import", "as", "map"};
+        const std::array<std::string, 35> reserved_words = {"and", "or", "xor", "not", "task", "struct", "int", "float", "string", "bool", "char", "class", "if", "else", "while", "return", "do", "input", "output", "runtime", "parameter_meta", "command", "then", "array", "file", "true", "false", "boolean", "workflow", "call", "import", "as", "map", "in", "scatter",};
         for (const auto &i : reserved_words)
         {
             if (i == util::to_lowercase(word))
@@ -589,7 +598,7 @@ namespace soto
     }
     bool lexer::is_type_token(const std::string &word)
     {
-        const std::array<std::string, 15> reserved_words = {
+        const std::array<std::string, 16> reserved_words = {
             "int",
             "float",
             "string",
@@ -604,7 +613,8 @@ namespace soto
             "output",
             "boolean",
             "workflow",
-            "map", //this is WDL's hashMap...
+            "map", // this is WDL's hashMap...
+            "struct"
         };
         for (const auto &i : reserved_words)
         {

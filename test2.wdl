@@ -71,6 +71,15 @@ workflow MyTestWorkflow {
     }
 }
 
+
+struct Sample {
+  String id
+  File bam_file
+}
+
+Sample sample = { id: "sample1", bam_file: "sample1.bam" }
+
+
 task OncotateSegments {
 
     input {
@@ -99,6 +108,8 @@ task OncotateSegments {
   "sample1": "s1.bam",
   "sample2": "s2.bam"
 }
+
+
 
     command <<<
         set -e

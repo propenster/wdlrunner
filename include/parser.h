@@ -58,6 +58,8 @@ namespace soto
         N_IMPORT_DECL,
         N_ALIAS_DECL,
         N_MAP,
+        N_SCATTER_STMT,
+        N_STRUCT_DECL,
     };
 
     inline const char *ast_node_type_to_string(ast_node_type type)
@@ -143,7 +145,12 @@ namespace soto
         case N_ALIAS_DECL:
             return "N_ALIAS_DECL";
         case N_MAP:
-            return "N_MAP"; //this is WDL's hashMap...
+            return "N_MAP"; // this is WDL's hashMap...
+
+        case N_SCATTER_STMT:
+            return "N_SCATTER_STMT";
+        case N_STRUCT_DECL:
+            return "N_STRUCT_DECL";
 
         default:
             return "UNKNOWN AST_NODE_TYPE";
@@ -187,8 +194,9 @@ namespace soto
         ast_node_ptr identifier;
         std::vector<ast_node_ptr> elements;
     };
-    struct map_expr{
-        //ast_node_ptr identifier;
+    struct map_expr
+    {
+        // ast_node_ptr identifier;
         std::vector<std::tuple<ast_node_ptr, ast_node_ptr>> elements; // key-value pairs
     };
     struct runtime_decl
@@ -227,6 +235,11 @@ namespace soto
     {
         ast_node_ptr path;
         ast_node_ptr alias;
+    };
+    struct struct_decl
+    {
+        ast_node_ptr identifier;
+        std::vector<ast_node_ptr> members; // instance fields (var_decl) or methods (func_decl)
     };
     struct func_decl
     {
@@ -271,6 +284,13 @@ namespace soto
     struct ret_stmt
     {
         ast_node_ptr expr;
+    };
+
+    struct scatter_stmt
+    {
+        ast_node_ptr identifier;
+        ast_node_ptr collection;
+        ast_node_ptr body;
     };
 
     struct expr_stmt
@@ -335,7 +355,9 @@ namespace soto
                      call_decl,
                      member_access,
                      import_decl,
-                     map_expr
+                     map_expr,
+                     scatter_stmt,
+                     struct_decl
 
                      >
             node;
@@ -376,6 +398,7 @@ namespace soto
         ast_node_ptr parse_var_decl();
         ast_node_ptr parse_block();
         ast_node_ptr parse_stmt();
+        ast_node_ptr parse_scatter_stmt();
         ast_node_ptr parse_if_stmt();
         ast_node_ptr parse_ternary_if_stmt();
         ast_node_ptr parse_do_while_stmt();

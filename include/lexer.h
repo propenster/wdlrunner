@@ -36,14 +36,15 @@ namespace soto
         token new_token(const token_kind &, const std::string &, int, int); // new_token with int_val for numeric token i suppose
         token new_token(const token_kind &, const std::string &, int, double);
         // std::string to_lowercase(std::string word);
-        std::unique_ptr<lexer> clone() const; 
+        std::unique_ptr<lexer> clone() const;
+
+        bool is_reserved_word(const std::string &);
+        bool is_type_token(const std::string &);
 
     private:
         static bool is_newline_char(unsigned char);
-        bool is_reserved_word(const std::string &);
         bool is_unicode(const char &);
         bool is_char_a_valid_ident_elem(char32_t);
-        bool is_type_token(const std::string &);
         std::string canonicalize_source_str(const std::string &);
     };
 

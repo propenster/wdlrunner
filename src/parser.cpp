@@ -179,6 +179,17 @@ namespace soto
             }
             else if (expect_token(T_IDENT) && peek_token(T_LCURLY)) // this probably a Struct, Task, or Class
             {
+                // importantly check if it's a struct, we parse struct differently cos struct can never me inside other class types - task, workflow
+                if (util::to_lowercase(prev_tok->lexeme) == "struct")
+                {
+                    result = parse_struct_decl();
+                    while (expect_token_and_read(T_ENDL))
+                        ;
+                    // if (expect_token(T_ENDL))
+                    //     expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after declaration.");
+                    return result;
+                }
+
                 result = parse_class_decl();
                 if (expect_token(T_ENDL))
                     expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after declaration.");
@@ -192,6 +203,14 @@ namespace soto
                     expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after declaration.");
                 return result;
             }
+        }
+        else if (expect_token(T_IDENT) && !m_lexer->is_reserved_word(util::to_lowercase(prev_tok->lexeme)))
+        {
+            // this is some struct's VAR_DECL...e.g MyStruct myVar;
+            result = parse_var_decl();
+            while (expect_token_and_read(T_ENDL))
+                ;
+            return result;
         }
 
         result = parse_stmt();
@@ -681,7 +700,35 @@ namespace soto
     // parse a struct declaration.../Task or Class declaration....
     ast_node_ptr parser::parse_struct_decl()
     {
-        return nullptr;
+        ast_node_ptr strct = new_node(N_STRUCT_DECL);
+        struct_decl decl{};
+        // struct have name...
+        expect_token_or_emit_error(T_IDENT, "Expect struct name.");
+        decl.identifier = new_node(N_IDENT);
+        decl.identifier->tok = prev_tok;
+        // expect '{' to begin struct body
+        expect_token_or_emit_error(T_LCURLY, "Expect '{' to begin struct body.");
+        // decl.body = parse_block();
+        //  parse struct members...
+        while (!expect_token(T_RCURLY) && !expect_token(T_EOF))
+        {
+            while (expect_token_and_read(T_ENDL))
+                ; // consume any endline T_ENDL before start of struct members...
+            expect_token_or_emit_error(T_TYPE, "Expect type keyword at start of struct member.");
+            auto member = parse_var_decl();
+            if (member)
+            {
+                decl.members.push_back(std::move(member));
+                if (expect_token(T_ENDL))
+                    expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after declaration.");
+            }
+        }
+
+        expect_token_or_emit_error(T_RCURLY, "Expect '}' to close struct body.");
+        strct->node = std::move(decl);
+        while (expect_token_and_read(T_ENDL))
+            ;
+        return strct;
     }
     ast_node_ptr parser::new_node(const ast_node_type &type)
     {
@@ -746,13 +793,17 @@ namespace soto
             // do we want to distinguish between different TYPEs, to me TYPE is TYPE or NULLABLETYPE is NULLABLETYPE ..we can figure out the kind of TYPE in it's lexeme and by static analysis...
             var_node.type->tok->lexeme = array_type_string;
         }
-
         if (expect_token(T_QUESTION)) // if its File? or Int? or String? whatever....it's a nullable table and we'll get a '?' before the type Identifier
         {
             var_node.type->type = N_TYPE_NULLABLE;
             read_token_or_emit_error(); // consume the '?'
             var_node.type->tok->lexeme += "?";
         }
+        if (!m_lexer->is_type_token(util::to_lowercase(lexeme)))
+        {
+            // if it's not a lexer-recognized type-token, then it's a user-defined type... a struct of some sort...
+        }
+
         expect_token_or_emit_error(T_IDENT, "Expect variable name.");
         var_node.identifier = new_node(N_IDENT);
 
@@ -821,7 +872,38 @@ namespace soto
             auto node = new_node(N_COMMAND_DECL);
             return node;
         }
+        else if (expect_token_and_read(T_SCATTER))
+        {
+            return parse_scatter_stmt();
+        }
         return parse_expr_stmt();
+    }
+    ast_node_ptr parser::parse_scatter_stmt()
+    {
+        //  scatter_block =
+        //     "scatter" "(" identifier "in" expression ")" "{"
+        //     (declaration | call | scatter_block | if_block)*
+        // "}"
+
+        auto node = new_node(N_SCATTER_STMT);
+        scatter_stmt scatter{};
+        expect_token_or_emit_error(T_LPAREN, "Expect '(' after scatter.");
+        scatter.identifier = new_node(N_IDENT);
+        scatter.identifier->tok = prev_tok;
+        expect_token_or_emit_error(T_IN, "Expect 'in' after scatter identifier.");
+        // expect_token_or_emit_error(T_IDENT, "Expect identifier after 'in'.");
+        auto in_collection = parse_expr(); // the collection to scatter in... MUST be an ARRAY-returning expression
+        // if (in_collection->type != N_ARRAY_EXPR)
+        // {
+        //     emit_error("Expect an array expression after 'in'.", *curr_tok);
+        //     return nullptr;
+        // }
+        scatter.collection = std::move(in_collection);
+        expect_token_or_emit_error(T_RPAREN, "Expect ')' after scatter in.");
+        expect_token_or_emit_error(T_LCURLY, "Expect '{' after scatter in.");
+        scatter.body = parse_block();
+        node->node = std::move(scatter);
+        return node;
     }
     ast_node_ptr parser::parse_if_stmt()
     {
@@ -1112,7 +1194,7 @@ namespace soto
             expect_token_or_emit_error(T_RSQUARE, "Expect a closing ']' after array elements.");
             return array_node;
         }
-        if (expect_token_and_read(T_LCURLY)) // if we hit here, it's the start of initialization of a WDL1.0 HashMap a.k.a Map
+        if (expect_token_and_read(T_LCURLY)) // if we hit here, it's the start of initialization of a WDL1.0 HashMap a.k.a Map or a STRUCT>..
         {
             ast_node_ptr map_node = new_node(N_MAP);
             map_expr map{};
@@ -1133,7 +1215,8 @@ namespace soto
                 } while (expect_token_and_read(T_COMMA));
 
             map_node->node = std::move(map);
-            while (expect_token_and_read(T_ENDL));               
+            while (expect_token_and_read(T_ENDL))
+                ;
             expect_token_or_emit_error(T_RCURLY, "Expect a closing '}' after map elements.");
             return map_node;
         }

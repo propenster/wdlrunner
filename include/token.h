@@ -81,6 +81,8 @@ namespace soto
         T_CALL,
         T_IMPORT,
         T_AS,
+        T_IN,
+        T_SCATTER,
 
         T_EOF,
         T_ERROR,
@@ -196,6 +198,10 @@ namespace soto
             return "T_IMPORT";
         case T_AS:
             return "T_AS";
+        case T_IN:
+            return "T_IN";
+        case T_SCATTER:
+            return "T_SCATTER";
 
         case T_EOF:
             return "T_EOF";
