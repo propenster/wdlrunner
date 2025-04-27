@@ -187,12 +187,513 @@ N_PROGRAM
 
 ```
 
+## Generated AST for test2.wdl source file
+```plaintext
+
+Node Type: N_PROGRAM
+Program Node:
+  Node Type: N_VERSION_DECL
+  Version Declaration:
+    Node Type: N_LITERAL
+    Program Node:
+  Node Type: N_IMPORT_DECL
+  Import Declaration:
+    Node Type: N_LITERAL
+    Program Node:
+    Node Type: N_ALIAS_DECL
+    Program Node:
+  Node Type: N_IMPORT_DECL
+  Import Declaration:
+    Node Type: N_LITERAL
+    Program Node:
+    Node Type: N_ALIAS_DECL
+    Program Node:
+  Node Type: N_IMPORT_DECL
+  Import Declaration:
+    Node Type: N_LITERAL
+    Program Node:
+    Node Type: N_ALIAS_DECL
+    Program Node:
+  Node Type: N_CLASS_DECL
+  Class Declaration:
+    Node Type: N_IDENT
+    Program Node:
+    Node Type: N_INPUT_DECL
+    Input Declaration:
+      Node Type: N_BLOCK
+      Block:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+    Node Type: N_WTCALL
+    Call Declaration:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+    Node Type: N_OUTPUT_DECL
+    Output Declaration:
+      Node Type: N_BLOCK
+      Block:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_MEMBER_ACCESS
+          Member Access:
+            Node Type: N_MEMBER_ACCESS_OBJ
+            Program Node:
+            Node Type: N_IDENT
+            Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_MEMBER_ACCESS
+          Member Access:
+            Node Type: N_MEMBER_ACCESS_OBJ
+            Program Node:
+            Node Type: N_IDENT
+            Program Node:
+  Node Type: N_CLASS_DECL
+  Class Declaration:
+    Node Type: N_IDENT
+    Program Node:
+    Node Type: N_INPUT_DECL
+    Input Declaration:
+      Node Type: N_BLOCK
+      Block:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+    Node Type: N_WTCALL
+    Call Declaration:
+      Node Type: N_MEMBER_ACCESS
+      Member Access:
+        Node Type: N_MEMBER_ACCESS_OBJ
+        Program Node:
+        Node Type: N_MEMBER_ACCESS_MEMBER
+        Program Node:
+      Node Type: N_ALIAS_DECL
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_CALL_PARAM_KEY
+      Program Node:
+      Node Type: N_IF_STMT
+      If Statement:
+        Node Type: N_FUNC_CALL
+        Function Call:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_EXPR_STMT
+        Expression Statement:
+          Node Type: N_LITERAL
+          Program Node:
+        Node Type: N_EXPR_STMT
+        Expression Statement:
+          Node Type: N_LITERAL
+          Program Node:
+    Node Type: N_OUTPUT_DECL
+    Output Declaration:
+      Node Type: N_BLOCK
+      Block:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_MEMBER_ACCESS
+          Member Access:
+            Node Type: N_MEMBER_ACCESS_OBJ
+            Program Node:
+            Node Type: N_IDENT
+            Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_MEMBER_ACCESS
+          Member Access:
+            Node Type: N_MEMBER_ACCESS_OBJ
+            Program Node:
+            Node Type: N_IDENT
+            Program Node:
+  Node Type: N_CLASS_DECL
+  Class Declaration:
+    Node Type: N_IDENT
+    Program Node:
+    Node Type: N_INPUT_DECL
+    Input Declaration:
+      Node Type: N_BLOCK
+      Block:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_LITERAL
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE_NULLABLE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_ARRAY
+          Array Expression:
+            Node Type: N_LITERAL
+            Program Node:
+            Node Type: N_LITERAL
+            Program Node:
+            Node Type: N_LITERAL
+            Program Node:
+            Node Type: N_LITERAL
+            Program Node:
+            Node Type: N_LITERAL
+            Program Node:
+    Node Type: N_VAR_DECL
+    Variable Declaration:
+      Node Type: N_TYPE
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_BINARY_EXPR
+      Binary Expression:
+        Node Type: N_FUNC_CALL
+        Function Call:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_ARRAY
+          Array Expression:
+            Node Type: N_IDENT
+            Program Node:
+            Node Type: N_LITERAL
+            Program Node:
+      Operator: *
+        Node Type: N_LITERAL
+        Program Node:
+    Node Type: N_VAR_DECL
+    Variable Declaration:
+      Node Type: N_TYPE
+      Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_FUNC_CALL
+      Function Call:
+        Node Type: N_IDENT
+        Program Node:
+        Node Type: N_IDENT
+        Program Node:
+    Node Type: N_COMMAND_DECL
+    Command Declaration:
+      Node Type: N_LITERAL
+      Program Node:
+    Node Type: N_RUNTIME_DECL
+    Runtime Declaration:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_FUNC_CALL
+      Function Call:
+        Node Type: N_IDENT
+        Program Node:
+        Node Type: N_ARRAY
+        Array Expression:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_LITERAL
+          Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_BINARY_EXPR
+      Binary Expression:
+        Node Type: N_IDENT
+        Program Node:
+      Operator: +
+        Node Type: N_LITERAL
+        Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_BINARY_EXPR
+      Binary Expression:
+        Node Type: N_BINARY_EXPR
+        Binary Expression:
+          Node Type: N_LITERAL
+          Program Node:
+        Operator: +
+          Node Type: N_FUNC_CALL
+          Function Call:
+            Node Type: N_IDENT
+            Program Node:
+            Node Type: N_ARRAY
+            Array Expression:
+              Node Type: N_IDENT
+              Program Node:
+              Node Type: N_LITERAL
+              Program Node:
+      Operator: +
+        Node Type: N_IF_STMT
+        If Statement:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_EXPR_STMT
+          Expression Statement:
+            Node Type: N_LITERAL
+            Program Node:
+          Node Type: N_EXPR_STMT
+          Expression Statement:
+            Node Type: N_LITERAL
+            Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_FUNC_CALL
+      Function Call:
+        Node Type: N_IDENT
+        Program Node:
+        Node Type: N_ARRAY
+        Array Expression:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_LITERAL
+          Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_FUNC_CALL
+      Function Call:
+        Node Type: N_IDENT
+        Program Node:
+        Node Type: N_ARRAY
+        Array Expression:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_LITERAL
+          Program Node:
+      Node Type: N_IDENT
+      Program Node:
+      Node Type: N_FUNC_CALL
+      Function Call:
+        Node Type: N_IDENT
+        Program Node:
+        Node Type: N_ARRAY
+        Array Expression:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_LITERAL
+          Program Node:
+    Node Type: N_OUTPUT_DECL
+    Output Declaration:
+      Node Type: N_BLOCK
+      Block:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_LITERAL
+          Program Node:
+        Node Type: N_VAR_DECL
+        Variable Declaration:
+          Node Type: N_TYPE
+          Program Node:
+          Node Type: N_IDENT
+          Program Node:
+          Node Type: N_LITERAL
+          Program Node:
+
+
+```
+
 ## ✅ TODO
 
 Here's a list of currently planned or partially implemented features:
 
-- [ ] **Workflow block support:** Execution of `workflow` blocks and task chaining
-- [ ] **Struct Definition:** And Custom Types...
+- [X] **Workflow block support:** Execution of `workflow` blocks and task chaining
+- [X] **Struct Definition:** And Custom Types...
 - [x] **Imports**
 - [x] **Call Statement/Expression**
 - [ ] **Map[String,String]**

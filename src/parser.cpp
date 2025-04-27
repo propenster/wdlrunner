@@ -4,6 +4,7 @@
 #include <string>
 #include "string_utils.h"
 #include <regex>
+#include <fstream>
 
 namespace soto
 {
@@ -131,7 +132,7 @@ namespace soto
                         if (expect_token_and_read(T_AS))
                         {
                             expect_token_or_emit_error(T_IDENT, "Expect identifier after 'as' in import statement.");
-                            import_decl.alias = new_node(N_IDENT);
+                            import_decl.alias = new_node(N_ALIAS_DECL);
                             import_decl.alias->tok = prev_tok;
                         }
                     }
@@ -314,7 +315,7 @@ namespace soto
                     if (expect_token_and_read(T_AS))
                     {
                         expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct member alias.");
-                        ast_node_ptr alias = new_node(N_IDENT);
+                        ast_node_ptr alias = new_node(N_ALIAS_DECL);
                         alias->tok = prev_tok;
 
                         input_decl.alias = std::move(alias);
@@ -356,14 +357,15 @@ namespace soto
                     if (expect_token(T_ENDL))
                         expect_token_and_read(T_ENDL);
                     expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct input.");
-                    ast_node_ptr input_ident = new_node(N_IDENT);
+                    ast_node_ptr input_ident = new_node(N_CALL_PARAM_KEY);
                     input_ident->tok = prev_tok;
 
                     expect_token_or_emit_error(T_ASSIGN, "Expect ':' after call construct input identifier.");
 
                     // expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct input.");
                     ast_node_ptr input_value = parse_expr();
-                    // expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after call construct input value.");
+                    // input_value->type = N_CALL_PARAM_VALUE;
+                    //  expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after call construct input value.");
                     input_decl.arguments.emplace_back(std::move(input_ident), std::move(input_value));
                 } while (expect_token_and_read(T_COMMA));
                 if (expect_token(T_ENDL))
@@ -1004,7 +1006,7 @@ namespace soto
             ast_node_ptr node = new_node(N_MEMBER_ACCESS);
             member_access access{};
 
-            access.object = new_node(N_IDENT);
+            access.object = new_node(N_MEMBER_ACCESS_OBJ);
             expect_token_or_emit_error(T_IDENT, "Expect object identifier.");
             access.object->tok = prev_tok;
 
@@ -1012,6 +1014,7 @@ namespace soto
 
             // expect_token_or_emit_error(T_IDENT, "Expect member name after '.' operator.");
             auto member = parse_expr(); // because some times, it may not be just simple .IDENT for member access, sometimes, it may be .FUNC_CALL.. like OncoAnotate.get_function(param1, param2)
+            // member->type = N_MEMBER_ACCESS_MEMBER;
             access.member = std::move(member);
             access.member->tok = prev_tok;
             node->node = std::move(access);
@@ -1102,11 +1105,224 @@ namespace soto
         return node;
     }
 
-    void parser::print_ast_node(const ast_node_ptr &node, int indent = 0)
+    void parser::write_ast_node_to_file(const ast_node_ptr &node, const std::string &file_name, int indent = 0)
     {
         if (!node)
             return;
 
+        std::ofstream file(file_name, std::ios::app);
+        if (!file.is_open())
+        {
+            std::cerr << "Failed to open file: " << file_name << std::endl;
+            return;
+        }
+
+        std::string indentation(indent, ' ');
+        file << indentation << "Node Type: " << ast_node_type_to_string(node->type) << "\n";
+
+        std::visit(
+            [&](auto &&value)
+            {
+                using T = std::decay_t<decltype(value)>;
+                if constexpr (std::is_same_v<T, program>)
+                {
+                    file << indentation << "Program Node:\n";
+                    write_ast_node_to_file(value.version, file_name, indent + 2);
+                    for (const auto &import : value.imports)
+                    {
+                        write_ast_node_to_file(import, file_name, indent + 2);
+                    }
+                    for (const auto &decl : value.declarations)
+                    {
+                        write_ast_node_to_file(decl, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, version_decl>)
+                {
+                    std::cout << indentation << "Version Declaration:\n";
+                    write_ast_node_to_file(value.version, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, func_decl>)
+                {
+                    file << indentation << "Function Declaration:\n";
+                    write_ast_node_to_file(value.type, file_name, indent + 2);
+                    write_ast_node_to_file(value.identifier, file_name, indent + 2);
+                    for (const auto &param : value.parameters)
+                    {
+                        write_ast_node_to_file(param, file_name, indent + 2);
+                    }
+                    write_ast_node_to_file(value.body, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, class_decl>)
+                {
+                    file << indentation << "Class Declaration:\n";
+                    write_ast_node_to_file(value.identifier, file_name, indent + 2);
+                    for (const auto &member : value.members)
+                    {
+                        write_ast_node_to_file(member, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, var_decl>)
+                {
+                    file << indentation << "Variable Declaration:\n";
+                    write_ast_node_to_file(value.type, file_name, indent + 2);
+                    write_ast_node_to_file(value.identifier, file_name, indent + 2);
+                    write_ast_node_to_file(value.initializer, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, input_decl>)
+                {
+                    file << indentation << "Input Declaration:\n";
+                    write_ast_node_to_file(value.body, file_name, indent + 2);
+                    for (const auto &member : value.members)
+                    {
+                        write_ast_node_to_file(member, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, call_decl>)
+                {
+                    file << indentation << "Call Declaration:\n";
+                    write_ast_node_to_file(value.member_accessed, file_name, indent + 2);
+                    if (value.alias)
+                        write_ast_node_to_file(value.alias, file_name, indent + 2);
+                    for (const auto &[key, val] : value.arguments)
+                    {
+                        write_ast_node_to_file(key, file_name, indent + 2);
+                        write_ast_node_to_file(val, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, member_access>)
+                {
+                    file << indentation << "Member Access:\n";
+                    write_ast_node_to_file(value.object, file_name, indent + 2);
+                    write_ast_node_to_file(value.member, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, output_decl>)
+                {
+                    file << indentation << "Output Declaration:\n";
+                    write_ast_node_to_file(value.body, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, runtime_decl>)
+                {
+                    file << indentation << "Runtime Declaration:\n";
+                    for (const auto &[identifier, value] : value.members)
+                    {
+                        write_ast_node_to_file(identifier, file_name, indent + 2);
+                        write_ast_node_to_file(value, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, import_decl>)
+                {
+                    file << indentation << "Import Declaration:\n";
+                    write_ast_node_to_file(value.path, file_name, indent + 2);
+                    if (value.alias)
+                        write_ast_node_to_file(value.alias, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, meta_decl>)
+                {
+                    file << indentation << "Parameter Meta Declaration:\n";
+                    write_ast_node_to_file(value.identifier, file_name, indent + 2);
+                    for (const auto &[item, val] : value.members)
+                    {
+                        write_ast_node_to_file(item, file_name, indent + 2);
+                        write_ast_node_to_file(val, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, command_decl>)
+                {
+                    file << indentation << "Command Declaration:\n";
+                    write_ast_node_to_file(value.body, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, block>)
+                {
+                    file << indentation << "Block:\n";
+                    for (const auto &stmt : value.statements)
+                    {
+                        write_ast_node_to_file(stmt, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, while_stmt>)
+                {
+                    file << indentation << "While Statement:\n";
+                    write_ast_node_to_file(value.condition, file_name, indent + 2);
+                    write_ast_node_to_file(value.body, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, do_while_stmt>)
+                {
+                    file << indentation << "Do While Statement:\n";
+                    write_ast_node_to_file(value.body, file_name, indent + 2);
+                    write_ast_node_to_file(value.condition, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, ret_stmt>)
+                {
+                    file << indentation << "Return Statement:\n";
+                    write_ast_node_to_file(value.expr, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, expr_stmt>)
+                {
+                    file << indentation << "Expression Statement:\n";
+                    write_ast_node_to_file(value.expr, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, if_stmt>)
+                {
+                    file << indentation << "If Statement:\n";
+                    write_ast_node_to_file(value.condition, file_name, indent + 2);
+                    write_ast_node_to_file(value.then_, file_name, indent + 2);
+                    write_ast_node_to_file(value.else_if, file_name, indent + 2);
+                    write_ast_node_to_file(value.else_, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, binary_expr>)
+                {
+                    file << indentation << "Binary Expression:\n";
+                    write_ast_node_to_file(value.left, file_name, indent + 2);
+                    file << indentation << "Operator: " << value.op->lexeme << "\n";
+                    write_ast_node_to_file(value.right, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, array_expr>)
+                {
+                    file << indentation << "Array Expression:\n";
+                    write_ast_node_to_file(value.identifier, file_name, indent + 2);
+                    for (const auto &element : value.elements)
+                    {
+                        write_ast_node_to_file(element, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, unary_expr>)
+                {
+                    file << indentation << "Unary Expression:\n";
+                    write_ast_node_to_file(value.operand, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, func_call>)
+                {
+                    file << indentation << "Function Call:\n";
+                    write_ast_node_to_file(value.identifier, file_name, indent + 2);
+                    for (const auto &arg : value.arguments)
+                    {
+                        write_ast_node_to_file(arg, file_name, indent + 2);
+                    }
+                }
+                else if constexpr (std::is_same_v<T, assign_expr>)
+                {
+                    file << indentation << "Assignment Expression:\n";
+                    write_ast_node_to_file(value.left, file_name, indent + 2);
+                    write_ast_node_to_file(value.right, file_name, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, literal_expr>)
+                {
+                    file << indentation << "Literal: " << value.value.lexeme << "\n";
+                }
+                else
+                {
+                    file << indentation << "Unhandled Node Type\n";
+                }
+            },
+            node->node);
+
+        file.close();
+    }
+    void parser::print_ast_node(const ast_node_ptr &node, int indent = 0)
+    {
+        if (!node)
+            return;
         std::string indentation(indent, ' ');
         std::cout << indentation << "Node Type: " << ast_node_type_to_string(node->type) << "\n";
 
@@ -1126,6 +1342,11 @@ namespace soto
                     {
                         print_ast_node(decl, indent + 2);
                     }
+                }
+                else if constexpr (std::is_same_v<T, version_decl>)
+                {
+                    std::cout << indentation << "Version Declaration:\n";
+                    print_ast_node(value.version, indent + 2);
                 }
                 else if constexpr (std::is_same_v<T, func_decl>)
                 {

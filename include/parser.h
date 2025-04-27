@@ -53,7 +53,10 @@ namespace soto
         N_MEMBER_ACCESS_OBJ,    // Node for member access object (e.g., obj)
         N_MEMBER_ACCESS_MEMBER, // Node for member access member (e.g., obj.member)
         // N_OBJECT,     // Node for object (e.g., obj)
+        N_CALL_PARAM_KEY, // call parameter key e.g param1={thisValue}, param2={thatValue}
+        N_CALL_PARAM_VALUE,
         N_IMPORT_DECL,
+        N_ALIAS_DECL,
     };
 
     inline const char *ast_node_type_to_string(ast_node_type type)
@@ -132,6 +135,12 @@ namespace soto
             return "N_MEMBER_ACCESS";
         case N_IMPORT_DECL:
             return "N_IMPORT_DECL";
+        case N_CALL_PARAM_KEY:
+            return "N_CALL_PARAM_KEY";
+        case N_CALL_PARAM_VALUE:
+            return "N_CALL_PARAM_VALUE";
+        case N_ALIAS_DECL:
+            return "N_ALIAS_DECL";
 
         default:
             return "UNKNOWN AST_NODE_TYPE";
@@ -338,6 +347,7 @@ namespace soto
 
         ast_node_ptr parse_program();
         void print_ast_node(const ast_node_ptr &, int indent);
+        void write_ast_node_to_file(const ast_node_ptr &, const std::string &, int indent);
 
         // helper methods...
     private:

@@ -61,7 +61,8 @@ workflow MyTestWorkflow {
             oncotator_docker = oncotator_docker,
             mem_gb = mem_gb_for_oncotator,
             boot_disk_space_gb = boot_disk_space_gb_for_oncotator,
-            preemptible_attempts = preemptible_attempts
+            preemptible_attempts = preemptible_attempts,
+            do_preemptible_attempts = if defined(preemptible_attempts) then true else false
     }
 
     output {
