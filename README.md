@@ -759,10 +759,10 @@ Here's a list of currently planned or partially implemented features:
 - [x] **Call Statement/Expression**
 - [X] **Map[String,String]** 
 - [X] **Pair[String,Int]** Add support for Pair[T, R] WDL type
-- [ ] **Scatter/Gather** - It is loops we have loops already...wth
+- [X] **Scatter/Gather** - It is loops we have loops already...wth
 - [X] **Optional Parameters** call_func(default='default_value_here', optional_param)
 - [X] **If Statements** Including If-Expressions (ternary-like ifs) e.g if true then this else that
-- [ ] **Scatter and if blocks:** Conditional and parallel executions
+- [X] **Scatter and if blocks:** Conditional and parallel executions
 - [ ] **Advanced error handling:** Type checking and better diagnostics
 - [x] **Imports and namespaces:** Support for `import` statements and reusable modules
 - [ ] **Library expansion:** More functions like `length`, `size`, `sub`, etc.

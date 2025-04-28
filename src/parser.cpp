@@ -40,6 +40,11 @@ namespace soto
         return t.kind == kind;
     }
 
+    static bool is_unusual_type(const token_kind &kind)
+    {
+        return kind == T_COMMAND || kind == T_RUNTIME || kind == T_META || kind == T_CALL;
+    }
+
     // THIS EATS tokens....consumes them doesn't return anything...
     // but emits diagnostic errors when necessary...
     void parser::expect_token_or_emit_error(token_kind kind, const std::string &error)
@@ -204,6 +209,13 @@ namespace soto
                 return result;
             }
         }
+        else if (is_unusual_type(curr_tok->kind))
+        {
+            result = parse_unusual_stmts();
+            while (expect_token_and_read(T_ENDL))
+                ;
+            return result;
+        }
         else if (expect_token(T_IDENT) && !m_lexer->is_reserved_word(util::to_lowercase(prev_tok->lexeme)))
         {
             // this is some struct's VAR_DECL...e.g MyStruct myVar;
@@ -212,11 +224,30 @@ namespace soto
                 ;
             return result;
         }
+        // else if (expect_token_and_read(T_SCATTER))
+        // {
+        //     result = parse_scatter_stmt();
+        //     while (expect_token_and_read(T_ENDL))
+        //         ;
+        //     return result;
+        // }
 
         result = parse_stmt();
         if (expect_token(T_ENDL))
             expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after declaration.");
         return result;
+    }
+    ast_node_ptr parser::parse_unusual_stmts()
+    {
+        switch (curr_tok->kind)
+        {
+        case T_CALL:
+            return parse_call_statement();
+        default:
+            break;
+        }
+
+        return nullptr;
     }
     ast_node_ptr parser::parse_func_decl()
     {
@@ -269,11 +300,6 @@ namespace soto
 
         return func;
     }
-
-    static bool is_unusual_type(const token_kind &kind)
-    {
-        return kind == T_COMMAND || kind == T_RUNTIME || kind == T_META || kind == T_CALL;
-    }
     // parse a class/task/struct declaration...
     //  class have name...
     //  expect '{' to begin class body
@@ -299,7 +325,7 @@ namespace soto
                 expect_token_and_read(T_ENDL);
 
             // expect type keyword at start of class member
-            if ((!expect_token(T_TYPE) && !is_unusual_type(curr_tok->kind)) && !expect_token(T_ENDL))
+            if ((!expect_token(T_TYPE) && !is_unusual_type(curr_tok->kind)) && !expect_token(T_ENDL) && !expect_token(T_SCATTER))
             {
                 emit_error("Expected type keyword at start of class member.", *curr_tok);
                 break;
@@ -485,6 +511,12 @@ namespace soto
                 ast_node_ptr command_node = new_node(N_COMMAND_DECL);
                 command_node->node = std::move(command);
                 decl.members.push_back(std::move(command_node));
+                continue;
+            }
+            if (expect_token_and_read(T_SCATTER))
+            {
+                auto result = parse_scatter_stmt();
+                decl.members.push_back(std::move(result));
                 continue;
             }
 
@@ -696,7 +728,95 @@ namespace soto
         klass->node = std::move(decl);
         return klass;
     }
+    ast_node_ptr parser::parse_call_statement()
+    {
+        if (expect_token_and_read(T_CALL))
+        {
+            ast_node_ptr call = new_node(N_WTCALL);
 
+            expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct.");
+            ast_node_ptr task_name_to_call = new_node(N_IDENT);
+            task_name_to_call->tok = prev_tok;
+            call_decl input_decl{};
+
+            ast_node_ptr mem_access = new_node(N_MEMBER_ACCESS);
+
+            member_access member_access{};
+
+            ast_node_ptr member_access_obj = new_node(N_MEMBER_ACCESS_OBJ);
+            member_access_obj->tok = prev_tok;
+            member_access.object = std::move(member_access_obj); // Use the task_name_to_call as the object
+
+            // if it's a CALL construct with a member access... and with or without an ALIAS...
+            if (expect_token_and_read(T_DOT))
+            {
+                expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct member access.");
+                ast_node_ptr member_access_member = new_node(N_MEMBER_ACCESS_MEMBER);
+                member_access_member->tok = prev_tok;
+                member_access.member = std::move(member_access_member); // Use the task_name_to_call as the object
+
+                if (expect_token_and_read(T_AS))
+                {
+                    expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct member alias.");
+                    ast_node_ptr alias = new_node(N_ALIAS_DECL);
+                    alias->tok = prev_tok;
+
+                    input_decl.alias = std::move(alias);
+                }
+
+                mem_access->node = std::move(member_access);
+                input_decl.member_accessed = std::move(mem_access); // Use the member_access as the member_accessed
+            }
+
+            if (!expect_token(T_LCURLY))
+            {
+                // then this is an input less call construct...
+                call->node = std::move(input_decl); // just push the no-input call...
+                return call;
+            }
+            expect_token_or_emit_error(T_LCURLY, "Expect '{' to begin call construct input body.");
+            if (expect_token(T_ENDL))
+                expect_token_and_read(T_ENDL);
+            if (!expect_token(T_TYPE))
+            {
+                // input keyword is a type... no need to check for T_IDENT
+                // this is an INPUT-less call construct...
+                // so this unserious user is trying to be funny...
+                // a left CURLY without an intention of having inputs...
+                call->node = std::move(input_decl); // just push the no-input call...
+                return call;
+            }
+            expect_token_or_emit_error(T_TYPE, "Expect identifier for call construct."); // input: some may not have inputs...handle that...input is a tTYPE
+            expect_token_or_emit_error(T_COLON, "Expect ':' after call construct input identifier.");
+
+            // input_decl.identifier = std::move(task_name_to_call);
+
+            do
+            {
+                // if (expect_token_and_read(T_ENDL))
+                //     continue;
+                if (expect_token(T_ENDL))
+                    expect_token_and_read(T_ENDL);
+                expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct input.");
+                ast_node_ptr input_ident = new_node(N_CALL_PARAM_KEY);
+                input_ident->tok = prev_tok;
+
+                expect_token_or_emit_error(T_ASSIGN, "Expect ':' after call construct input identifier.");
+
+                // expect_token_or_emit_error(T_IDENT, "Expect identifier for call construct input.");
+                ast_node_ptr input_value = parse_expr();
+                // input_value->type = N_CALL_PARAM_VALUE;
+                //  expect_token_or_emit_error(T_ENDL, "Expect ';' or newline after call construct input value.");
+                input_decl.arguments.emplace_back(std::move(input_ident), std::move(input_value));
+            } while (expect_token_and_read(T_COMMA));
+            if (expect_token(T_ENDL))
+                expect_token_and_read(T_ENDL);
+            expect_token_or_emit_error(T_RCURLY, "Expect '}' to close call construct body.");
+            call->node = std::move(input_decl);
+            return call;
+        }
+        return nullptr;
+    }
     // parse a struct declaration.../Task or Class declaration....
     ast_node_ptr parser::parse_struct_decl()
     {
@@ -857,8 +977,8 @@ namespace soto
         block block{};
         while (!expect_token(T_RCURLY) && !expect_token(T_EOF))
         {
-            if (expect_token_and_read(T_ENDL))
-                continue; // consume any endline T_ENDL before start of block statements...
+            while (expect_token_and_read(T_ENDL))
+                ; // consume any endline T_ENDL before start of block statements...
             // expect_token_and_read(T_ENDL); // consume any endline T_ENDL before start of block statements...
             auto stmt = parse_decl();
             block.statements.push_back(std::move(stmt));
@@ -899,10 +1019,10 @@ namespace soto
             auto node = new_node(N_COMMAND_DECL);
             return node;
         }
-        else if (expect_token_and_read(T_SCATTER))
-        {
-            return parse_scatter_stmt();
-        }
+        // else if (expect_token_and_read(T_SCATTER))
+        // {
+        //     return parse_scatter_stmt();
+        // }
         return parse_expr_stmt();
     }
     ast_node_ptr parser::parse_scatter_stmt()
@@ -916,6 +1036,7 @@ namespace soto
         scatter_stmt scatter{};
         expect_token_or_emit_error(T_LPAREN, "Expect '(' after scatter.");
         scatter.identifier = new_node(N_IDENT);
+        expect_token_or_emit_error(T_IDENT, "Expect identifier after scatter.");
         scatter.identifier->tok = prev_tok;
         expect_token_or_emit_error(T_IN, "Expect 'in' after scatter identifier.");
         // expect_token_or_emit_error(T_IDENT, "Expect identifier after 'in'.");
@@ -928,7 +1049,8 @@ namespace soto
         scatter.collection = std::move(in_collection);
         expect_token_or_emit_error(T_RPAREN, "Expect ')' after scatter in.");
         expect_token_or_emit_error(T_LCURLY, "Expect '{' after scatter in.");
-        scatter.body = parse_block();
+        auto body = parse_block();
+        scatter.body = std::move(body);
         node->node = std::move(scatter);
         return node;
     }
@@ -1574,6 +1696,13 @@ namespace soto
                     std::cout << indentation << "Pair Expression:\n";
                     print_ast_node(value.first, indent + 2);
                     print_ast_node(value.second, indent + 2);
+                }
+                else if constexpr (std::is_same_v<T, scatter_stmt>)
+                {
+                    std::cout << indentation << "Scatter Statement:\n";
+                    print_ast_node(value.identifier, indent + 2);
+                    print_ast_node(value.collection, indent + 2);
+                    print_ast_node(value.body, indent + 2);
                 }
                 else if constexpr (std::is_same_v<T, func_decl>)
                 {

@@ -428,6 +428,9 @@ namespace soto
         ast_node_ptr parse_factor_expr();
 
         ast_node_ptr parse_primary_expr();
+
+        ast_node_ptr parse_call_statement();
+        ast_node_ptr parse_unusual_stmts();
     };
 
 }

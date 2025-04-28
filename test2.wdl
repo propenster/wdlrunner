@@ -33,6 +33,14 @@ workflow CNVOncotatorWorkflow {
             preemptible_attempts = preemptible_attempts
     }
 
+Array[Int] numbers = [1, 2, 3]
+
+    scatter (n in numbers) {
+  call process_number {
+    input: number = n
+  }
+}
+
     output {
         File oncotated_called_file = OncotateSegments.oncotated_called_file
         File oncotated_called_gene_list_file = OncotateSegments.oncotated_called_gene_list_file
@@ -80,7 +88,6 @@ struct Sample {
 Sample sample = { id: "sample1", bam_file: "sample1.bam" }
 
 Pair[String, Int] my_pair = ("apple", 5)
-
 
 task OncotateSegments {
 
