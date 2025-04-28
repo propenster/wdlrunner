@@ -765,7 +765,7 @@ Here's a list of currently planned or partially implemented features:
 - [X] **Scatter and if blocks:** Conditional and parallel executions
 - [ ] **Advanced error handling:** Type checking and better diagnostics
 - [x] **Imports and namespaces:** Support for `import` statements and reusable modules
-- [ ] **Library expansion:** More functions like `length`, `size`, `sub`, etc.
+- [ ] **Library expansion:** More functions like `length`, `size`, `sub`, `select_first`, `zip` etc.
 - [x] **CLI tool:** A runner to compile and execute WDL scripts directly
 - [ ] **Testing:** Unit and integration tests for all components
 - [X] **Custom Type Variable Definition** e.g StructType nameOfVariable
